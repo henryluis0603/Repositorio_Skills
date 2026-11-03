@@ -29,6 +29,14 @@ GRUPOS = {
 INDICADORES = {"pobre": "Pobreza monetaria", "pobre_extremo": "Pobreza extrema"}
 # Orden natural; los grupos que no aparecen aquí se ordenan de mayor a menor
 ORDEN_FIJO = {"grupo_edad": ["0-13", "14-17", "18-29", "30-44", "45-59", "60+"]}
+# Nombre de cada departamento según los dos primeros dígitos del ubigeo (INEI)
+DEPARTAMENTOS = {
+    "01": "Amazonas", "02": "Áncash", "03": "Apurímac", "04": "Arequipa", "05": "Ayacucho",
+    "06": "Cajamarca", "07": "Callao", "08": "Cusco", "09": "Huancavelica", "10": "Huánuco",
+    "11": "Ica", "12": "Junín", "13": "La Libertad", "14": "Lambayeque", "15": "Lima",
+    "16": "Loreto", "17": "Madre de Dios", "18": "Moquegua", "19": "Pasco", "20": "Piura",
+    "21": "Puno", "22": "San Martín", "23": "Tacna", "24": "Tumbes", "25": "Ucayali",
+}
 
 
 def main() -> None:
@@ -56,6 +64,8 @@ def main() -> None:
         tabla = tabla.reindex([g for g in ORDEN_FIJO[a.por] if g in tabla.index])
     else:
         tabla = tabla.sort_values("pct", ascending=False)
+    if a.por == "departamento":
+        tabla.index = tabla.index.map(DEPARTAMENTOS)
 
     titulo = f"{INDICADORES[a.indicador]} por {GRUPOS[a.por]}, Perú {a.anio}"
     if a.filtro:
