@@ -1,0 +1,8 @@
+# Microdatos del INEI: se bajan con la skill descargando-enaho, no se suben
+datos/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+# La base limpia es pesada y se regenera; validacion.txt sí se sube
+salidas/*.parquet
