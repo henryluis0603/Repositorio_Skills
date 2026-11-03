@@ -7,7 +7,7 @@ allowed-tools: Bash(uv run *)
 
 # Graficar la ENAHO
 
-1. Si no existe `salidas/personas_2024.parquet` (o el del año pedido), usa primero la skill `limpiando-enaho`.
+1. Si no existen `salidas/hogares_2024.parquet` y `salidas/personas_2024.parquet` (o los del año pedido), usa primero la skill `limpiando-enaho`.
 2. Elige `--por` según el pedido: `area`, `sexo`, `grupo_edad` o `departamento`. Elige `--indicador`: `pobre` (por defecto) o `pobre_extremo`. Corre exactamente:
 
    ```bash
@@ -20,7 +20,7 @@ allowed-tools: Bash(uv run *)
 
 ## Reglas fijas (ya están en el script)
 
-- Pondera siempre con `facpob07`: el eje es **% de personas**.
+- Siempre ponderado; el eje es **% de personas**. Área y departamento usan la sumaria con el peso oficial del INEI (`factor07 × mieperho`), así que replican las cifras publicadas (urbana 24.8 %, rural 39.3 %). Sexo y edad usan la base de personas con `facpob07`. El script elige solo.
 - Barras horizontales que empiezan en cero, ordenadas de mayor a menor (la edad va en su orden natural).
 - Un solo color (`#1f4e79`); nada de colores por categoría.
 - El valor escrito en cada barra, con un decimal.

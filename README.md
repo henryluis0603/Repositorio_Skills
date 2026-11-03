@@ -5,7 +5,7 @@ Cuatro skills de Claude Code que descargan, limpian, grafican y mapean la ENAHO 
 | Skill | Qué hace | Entra | Sale |
 |---|---|---|---|
 | [`descargando-enaho`](.claude/skills/descargando-enaho/) | Baja los zip del INEI (2015–2024, cualquier módulo) y el GeoJSON | año, módulos | `datos/<año>/*.dta`, `datos/peru_departamental_simple.geojson` |
-| [`limpiando-enaho`](.claude/skills/limpiando-enaho/) | Une miembros (02) y sumaria (34), filtra residentes y valida | `datos/2024/` | `salidas/personas_2024.parquet`, [`salidas/validacion.txt`](salidas/validacion.txt) |
+| [`limpiando-enaho`](.claude/skills/limpiando-enaho/) | Une miembros (02) y sumaria (34), filtra residentes y valida | `datos/2024/` | `salidas/personas_2024.parquet`, `salidas/hogares_2024.parquet`, [`salidas/validacion.txt`](salidas/validacion.txt) |
 | [`graficando-enaho`](.claude/skills/graficando-enaho/) | Barras de pobreza por área, sexo, edad o departamento | la base limpia | `figuras/*.png` |
 | [`mapeando-enaho`](.claude/skills/mapeando-enaho/) | Mapa por departamento, unido por código | la base limpia y el GeoJSON | `mapas/pobreza_departamento.png` |
 
@@ -67,5 +67,5 @@ Más figuras en [`figuras/`](figuras/). La evaluación con y sin skills está en
 - **Llaves como texto.** `conglome`, `ubigeo` y las demás conservan los ceros a la izquierda.
 - **Residentes habituales.** `(p204==1 & p205==2) | (p204==2 & p206==1)`, la definición del INEI.
 - **Unión `m:1` validada.** Si un hogar estuviera repetido, el script falla en vez de duplicar personas.
-- **Ponderación.** La validación usa la fórmula oficial (sumaria, `factor07 × mieperho`). Gráficos y mapas usan la base de personas con `facpob07`, que permite cortar por sexo y edad; por eso difieren hasta 0.5 puntos de las cifras oficiales por departamento. Ver [`reference.md`](.claude/skills/limpiando-enaho/reference.md).
+- **Ponderación.** Validación, mapa y cortes por departamento o área usan la fórmula oficial del INEI (sumaria, `factor07 × mieperho`), así que replican las cifras publicadas: Cajamarca 45.0 %, Ica 6.0 %, rural 39.3 %. Solo los cortes por sexo y edad usan la base de personas con `facpob07`. Ver [`reference.md`](.claude/skills/limpiando-enaho/reference.md).
 - **Mapas por código.** `ubigeo[:2]` con `FIRST_IDDP`, nunca por nombre.

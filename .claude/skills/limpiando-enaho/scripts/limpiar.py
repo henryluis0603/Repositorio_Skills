@@ -4,7 +4,8 @@ Uso:
     uv run limpiar.py --anio 2024
 
 Entradas:  datos/<anio>/sumaria-<anio>.dta y datos/<anio>/enaho01-<anio>-200.dta
-Salidas:   salidas/personas_<anio>.parquet y salidas/validacion.txt
+Salidas:   salidas/personas_<anio>.parquet (peso facpob07),
+           salidas/hogares_<anio>.parquet (peso oficial factor07 × mieperho) y salidas/validacion.txt
 Sale con código 1 si alguna validación falla (igual escribe validacion.txt).
 """
 
@@ -89,8 +90,18 @@ def main() -> None:
         labels=["0-13", "14-17", "18-29", "30-44", "45-59", "60+"],
     ).astype(str)
 
+    # Base de hogares con el peso oficial del INEI: pobreza por departamento y área se calcula aquí
+    hogares = sumaria[COLS_SUMARIA + ["ubigeo", "estrato"]].copy()
+    hogares["anio"] = a.anio
+    hogares["departamento"] = hogares.ubigeo.str[:2]
+    hogares["urbano"] = hogares.estrato <= 5
+    hogares["area"] = hogares.urbano.map({True: "Urbana", False: "Rural"})
+    hogares["pobre"] = hogares.pobreza <= 2
+    hogares["pobre_extremo"] = hogares.pobreza == 1
+    hogares["peso"] = hogares.factor07 * hogares.mieperho
+
     # 6. Validar
-    w_hogar = sumaria.factor07 * sumaria.mieperho
+    w_hogar = hogares.peso
     pob_sumaria = ponderada(sumaria.pobreza <= 2, w_hogar)
     ext_sumaria = ponderada(sumaria.pobreza == 1, w_hogar)
     pob_personas = ponderada(base.pobre, base.facpob07)
@@ -130,9 +141,10 @@ def main() -> None:
     a.salidas.mkdir(parents=True, exist_ok=True)
     salida = a.salidas / f"personas_{a.anio}.parquet"
     base.to_parquet(salida, index=False)
+    hogares.to_parquet(a.salidas / f"hogares_{a.anio}.parquet", index=False)
     (a.salidas / "validacion.txt").write_text("\n".join(lineas) + "\n", encoding="utf-8")
     print("\n".join(lineas))
-    print(f"\nBase guardada en {salida}")
+    print(f"\nBases guardadas en {salida} y {a.salidas / f'hogares_{a.anio}.parquet'}")
     sys.exit(0 if ok else 1)
 
 

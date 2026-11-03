@@ -17,7 +17,7 @@ claude -p --disallowedTools Skill "<pedido>"      # sin skills (y sin la carpeta
 
 Los dos últimos pedidos activaron **dos skills seguidas**: como no existía la base limpia, la skill de gráficos o de mapas llamó primero a `limpiando-enaho`.
 
-Con skills las cifras usan `facpob07` sobre la base de personas; por eso difieren en 0.1 puntos de la referencia (calculada con la sumaria y `factor07 × mieperho`).
+En esta corrida las skills ponderaban con `facpob07` sobre la base de personas y por eso diferían 0.1 puntos de la referencia. **Ya está corregido:** ahora departamento y área se calculan con la sumaria y `factor07 × mieperho`, como el INEI, y salen exactos: urbana 24.8 %, rural 39.3 %, Cajamarca 45.0 %, Loreto 43.0 %, Puno 39.9 %, Ica 6.0 %, Moquegua 11.0 %, Madre de Dios 11.1 %. El mapa comprueba esas seis cifras con `assert`.
 
 ## Qué cambió al tener las skills
 

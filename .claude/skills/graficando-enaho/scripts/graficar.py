@@ -5,7 +5,8 @@ Uso:
     uv run graficar.py --por sexo --indicador pobre_extremo --anio 2024
     uv run graficar.py --por grupo_edad --filtro "area == 'Rural'"
 
-Entrada: salidas/personas_<anio>.parquet (la crea la skill limpiando-enaho)
+Entrada: salidas/hogares_<anio>.parquet (área, departamento) o salidas/personas_<anio>.parquet
+         (sexo, edad); las crea la skill limpiando-enaho
 Salida:  figuras/<indicador>_<por>_<anio>.png y la tabla impresa en pantalla
 """
 
@@ -26,6 +27,7 @@ GRUPOS = {
     "grupo_edad": "grupo de edad",
     "departamento": "departamento",
 }
+GRUPOS_HOGAR = {"area", "departamento"}
 INDICADORES = {"pobre": "Pobreza monetaria", "pobre_extremo": "Pobreza extrema"}
 # Orden natural; los grupos que no aparecen aquí se ordenan de mayor a menor
 ORDEN_FIJO = {"grupo_edad": ["0-13", "14-17", "18-29", "30-44", "45-59", "60+"]}
@@ -49,16 +51,25 @@ def main() -> None:
     p.add_argument("--figuras", type=Path, default=Path("figuras"))
     a = p.parse_args()
 
-    ruta = a.salidas / f"personas_{a.anio}.parquet"
+    # Área y departamento son atributos del hogar: se usan la sumaria y el peso oficial del INEI
+    # (factor07 × mieperho). Sexo y edad solo existen en la base de personas, con facpob07.
+    # Ambos dan % de personas, no de encuestas.
+    nivel = "hogares" if a.por in GRUPOS_HOGAR else "personas"
+    ruta = a.salidas / f"{nivel}_{a.anio}.parquet"
     if not ruta.exists():
         sys.exit(f"ERROR: falta {ruta}. Usa primero la skill limpiando-enaho.")
     base = pd.read_parquet(ruta)
     if a.filtro:
-        base = base.query(a.filtro)
+        try:
+            base = base.query(a.filtro)
+        except pd.errors.UndefinedVariableError:
+            # El filtro usa una variable de personas (p. ej. sexo): se pasa a la base de personas
+            nivel = "personas"
+            base = pd.read_parquet(a.salidas / f"personas_{a.anio}.parquet").query(a.filtro)
+    peso = "peso" if nivel == "hogares" else "facpob07"
 
-    # Siempre ponderado con facpob07: es un % de personas, no de encuestas
-    base = base.assign(_num=base[a.indicador] * base.facpob07)
-    tabla = base.groupby(a.por).agg(num=("_num", "sum"), pob=("facpob07", "sum"), n=("facpob07", "size"))
+    base = base.assign(_num=base[a.indicador] * base[peso])
+    tabla = base.groupby(a.por).agg(num=("_num", "sum"), pob=(peso, "sum"), n=(peso, "size"))
     tabla["pct"] = (tabla.num / tabla.pob * 100).astype(float)
     if a.por in ORDEN_FIJO:
         tabla = tabla.reindex([g for g in ORDEN_FIJO[a.por] if g in tabla.index])
@@ -82,7 +93,7 @@ def main() -> None:
     ax.set_title(titulo, loc="left", fontsize=12, fontweight="bold")
     for lado in ("top", "right"):
         ax.spines[lado].set_visible(False)
-    fig.text(0.01, 0.01, f"Fuente: INEI, ENAHO {a.anio}. Ponderado con facpob07.", fontsize=8, color="#555555")
+    fig.text(0.01, 0.01, f"Fuente: INEI, ENAHO {a.anio}. Ponderado con {'factor07 × mieperho' if nivel == 'hogares' else 'facpob07'}.", fontsize=8, color="#555555")
     fig.tight_layout(rect=(0, 0.04, 1, 1))
 
     a.figuras.mkdir(parents=True, exist_ok=True)
@@ -90,7 +101,7 @@ def main() -> None:
     fig.savefig(salida, dpi=200)
 
     print(titulo)
-    print(tabla[["pct", "n"]].rename(columns={"pct": "%", "n": "encuestados"}).round(1).to_string())
+    print(tabla[["pct", "n"]].rename(columns={"pct": "%", "n": f"{nivel} encuestados"}).round(1).to_string())
     print(f"\nFigura guardada en {salida}")
 
 

@@ -2,6 +2,8 @@
 
 ## Columnas de `salidas/personas_<año>.parquet`
 
+`salidas/hogares_<año>.parquet` tiene una fila por hogar con las columnas del módulo 34, `ubigeo`, `estrato`, `departamento`, `urbano`, `area`, `pobre`, `pobre_extremo` y `peso = factor07 × mieperho`.
+
 | Columna | Origen | Significado |
 |---|---|---|
 | `conglome`, `vivienda`, `hogar`, `codperso` | 02 | Llaves (texto) |
@@ -25,10 +27,10 @@
 
 ## Dos formas de ponderar
 
-- **Oficial INEI**: sumaria con `factor07 × mieperho`. Da 27.58 % en 2024 (publicado: 27.6 %). Es la que usa la validación.
-- **Base de personas**: `facpob07`. Da 27.53 % en 2024. Es la que usan las respuestas, porque permite cortar por sexo o edad.
+- **Oficial INEI** (`hogares_<año>.parquet`): sumaria con `factor07 × mieperho`. Da 27.58 % en 2024 (publicado: 27.6 %). Se usa para la validación, el mapa y todo corte por departamento o área: replica las cifras publicadas.
+- **Base de personas** (`personas_<año>.parquet`): `facpob07`. Da 27.53 % en 2024. Se usa solo para cortes que la sumaria no tiene: sexo, edad.
 
-Por departamento o área la diferencia entre ambas es de hasta 0.5 puntos (Puno 39.9 % vs 40.4 %; Ica 6.0 % vs 5.9 %).
+No mezcles: con `facpob07`, por departamento la cifra difiere hasta 0.5 puntos de la oficial (Puno 40.4 % vs 39.9 %; Ica 5.9 % vs 6.0 %).
 
 ## Cifras de referencia 2024
 
@@ -36,7 +38,7 @@ Por departamento o área la diferencia entre ambas es de hasta 0.5 puntos (Puno 
 |---|---|
 | Pobreza nacional | 27.6 % |
 | Pobreza extrema | 5.5 % |
-| Urbana / Rural | 24.8 % / 39.3 % (sumaria) · 24.7 % / 39.4 % (facpob07) |
+| Urbana / Rural | 24.8 % / 39.3 % |
 | Cusco | 18.5 % |
 | Cajamarca / Loreto / Puno | 45.0 / 43.0 / 39.9 % |
 | Ica / Moquegua / Madre de Dios | 6.0 / 11.0 / 11.1 % |

@@ -4,7 +4,7 @@ Uso:
     uv run mapear.py
     uv run mapear.py --indicador pobre_extremo --anio 2024
 
-Entradas: salidas/personas_<anio>.parquet (skill limpiando-enaho)
+Entradas: salidas/hogares_<anio>.parquet (skill limpiando-enaho)
           datos/peru_departamental_simple.geojson (skill descargando-enaho)
 Salida:   mapas/<nombre>_departamento.png y la tabla impresa en pantalla
 """
@@ -21,9 +21,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
 INDICADORES = {"pobre": ("pobreza", "Pobreza monetaria"), "pobre_extremo": ("pobreza_extrema", "Pobreza extrema")}
-# Referencias INEI 2024 (sumaria, factor07 × mieperho). Con facpob07 difieren hasta ~0.5 puntos
+# Referencias INEI 2024 (sumaria, factor07 × mieperho): deben salir iguales al redondear a un decimal
 REFERENCIA_2024 = {"06": 45.0, "16": 43.0, "21": 39.9, "11": 6.0, "18": 11.0, "17": 11.1}
-TOLERANCIA = 0.6
+TOLERANCIA = 0.05
 
 
 def main() -> None:
@@ -35,15 +35,16 @@ def main() -> None:
     p.add_argument("--mapas", type=Path, default=Path("mapas"))
     a = p.parse_args()
 
-    ruta = a.salidas / f"personas_{a.anio}.parquet"
+    ruta = a.salidas / f"hogares_{a.anio}.parquet"
     if not ruta.exists():
         sys.exit(f"ERROR: falta {ruta}. Usa primero la skill limpiando-enaho.")
     if not a.geojson.exists():
         sys.exit(f"ERROR: falta {a.geojson}. Usa primero la skill descargando-enaho.")
 
+    # Ponderado como el INEI: hogares con factor07 × mieperho (= % de personas)
     base = pd.read_parquet(ruta)
-    base = base.assign(_num=base[a.indicador] * base.facpob07)
-    tabla = base.groupby("departamento").agg(num=("_num", "sum"), pob=("facpob07", "sum"))
+    base = base.assign(_num=base[a.indicador] * base.peso)
+    tabla = base.groupby("departamento").agg(num=("_num", "sum"), pob=("peso", "sum"))
     tabla["pct"] = (tabla.num / tabla.pob * 100).astype(float)
 
     # Unir por código, nunca por nombre: ubigeo[:2] con FIRST_IDDP (Lima 15 y Callao 07 van separados)
@@ -68,7 +69,7 @@ def main() -> None:
     )
     ax.set_axis_off()
     ax.set_title(f"{etiqueta} por departamento, Perú {a.anio}", loc="left", fontsize=13, fontweight="bold")
-    fig.text(0.02, 0.02, f"Fuente: INEI, ENAHO {a.anio}. Ponderado con facpob07.", fontsize=8, color="#555555")
+    fig.text(0.02, 0.02, f"Fuente: INEI, ENAHO {a.anio}. Ponderado con factor07 × mieperho.", fontsize=8, color="#555555")
 
     a.mapas.mkdir(parents=True, exist_ok=True)
     salida = a.mapas / f"{nombre}_departamento.png"

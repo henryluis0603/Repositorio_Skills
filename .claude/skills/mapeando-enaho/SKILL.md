@@ -7,7 +7,7 @@ allowed-tools: Bash(uv run *)
 
 # Mapear la ENAHO
 
-1. Si no existe `salidas/personas_2024.parquet` (o el del año pedido), usa primero la skill `limpiando-enaho`.
+1. Si no existe `salidas/hogares_2024.parquet` (o el del año pedido), usa primero la skill `limpiando-enaho`.
 2. Si no existe `datos/peru_departamental_simple.geojson`, usa primero la skill `descargando-enaho`.
 3. Corre exactamente:
 
@@ -27,5 +27,5 @@ allowed-tools: Bash(uv run *)
 - Lima (15) y Callao (07) van separados.
 - Un solo tono de claro a oscuro (`Reds`), desde 0; nunca arcoíris.
 - Leyenda con la unidad: «% de personas».
-- Pondera con `facpob07`.
-- Referencias 2024 que el script comprueba (±0.6 puntos): Cajamarca 45.0 %, Loreto 43.0 %, Puno 39.9 %, Ica 6.0 %, Moquegua 11.0 %, Madre de Dios 11.1 %.
+- Pondera como el INEI: sumaria con `factor07 × mieperho`.
+- Referencias 2024 que el script comprueba (deben salir exactas a un decimal): Cajamarca 45.0 %, Loreto 43.0 %, Puno 39.9 %, Ica 6.0 %, Moquegua 11.0 %, Madre de Dios 11.1 %.
