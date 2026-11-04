@@ -6,3 +6,6 @@ __pycache__/
 .DS_Store
 # La base limpia es pesada y se regenera; validacion.txt sí se sube
 salidas/*.parquet
+
+# Carpeta para demos en vivo: nada de lo que se genere aquí se sube
+demo/

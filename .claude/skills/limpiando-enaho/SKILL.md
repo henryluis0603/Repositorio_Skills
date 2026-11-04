@@ -8,7 +8,7 @@ allowed-tools: Bash(uv run *)
 # Limpiar la ENAHO
 
 1. Si faltan `datos/<año>/sumaria-<año>.dta` o `datos/<año>/enaho01-<año>-200.dta`, usa primero la skill `descargando-enaho`.
-2. Corre exactamente, desde la raíz del repositorio:
+2. Corre exactamente, desde la carpeta de trabajo actual (no cambies de carpeta):
 
    ```bash
    uv run ${CLAUDE_SKILL_DIR}/scripts/limpiar.py --anio <año>

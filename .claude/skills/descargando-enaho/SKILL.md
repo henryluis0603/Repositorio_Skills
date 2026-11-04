@@ -7,7 +7,7 @@ allowed-tools: Bash(uv run *)
 
 # Descargar la ENAHO
 
-1. Corre exactamente, desde la raíz del repositorio:
+1. Corre exactamente, desde la carpeta de trabajo actual (no cambies de carpeta):
 
    ```bash
    uv run ${CLAUDE_SKILL_DIR}/scripts/descargar.py --anio <año>
